@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Elephant AR</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #message {
+      position: fixed;
+      top: 20px;
+      left: 0;
+      width: 100%;
+
+      text-align: center;
+
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+
+      z-index: 9999;
+
+      text-shadow: 2px 2px 4px black;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="message">
+    Point the camera at the elephant photo
+  </div>
+
+
+  <a-scene
+    mindar-image="
+      imageTargetSrc: ./elephant.mind;
+      maxTrack: 1;
+      uiScanning: true;
+      uiLoading: true;
+    "
+    color-space="sRGB"
+    renderer="
+      colorManagement: true;
+      physicallyCorrectLights: true;
+    "
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded>
+
+
+    <!-- VIDEO FILE -->
+
+    <a-assets>
+
+      <video
+        id="elephantVideo"
+        src="./video.mp4"
+        preload="auto"
+        loop
+        muted
+        playsinline
+        webkit-playsinline>
+      </video>
+
+    </a-assets>
+
+
+    <!-- CAMERA -->
+
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled: false">
+    </a-camera>
+
+
+    <!-- AR TARGET -->
+
+    <a-entity
+      id="target"
+      mindar-image-target="targetIndex: 0">
+
+
+      <!-- VIDEO -->
+
+      <a-video
+        id="arVideo"
+        src="#elephantVideo"
+        position="0 0 0"
+        width="1"
+        height="0.5625">
+      </a-video>
+
+
+    </a-entity>
+
+  </a-scene>
+
+
+  <script>
+
+    const video =
+      document.querySelector("#elephantVideo");
+
+    const target =
+      document.querySelector("#target");
+
+    const message =
+      document.querySelector("#message");
+
+
+    // ==========================================
+    // ELEPHANT IMAGE FOUND
+    // ==========================================
+
+    target.addEventListener("targetFound", () => {
+
+      console.log("==============================");
+      console.log("ELEPHANT TARGET FOUND");
+      console.log("STARTING VIDEO");
+      console.log("==============================");
+
+      message.innerHTML =
+        "🐘 Elephant detected!";
+
+
+      // Start from beginning
+
+      video.currentTime = 0;
+
+
+      // Play video
+
+      video.play()
+        .then(() => {
+
+          console.log("VIDEO PLAYING");
+
+        })
+        .catch((error) => {
+
+          console.error(
+            "VIDEO PLAY ERROR:",
+            error
+          );
+
+        });
+
+    });
+
+
+    // ==========================================
+    // ELEPHANT IMAGE LOST
+    // ==========================================
+
+    target.addEventListener("targetLost", () => {
+
+      console.log("ELEPHANT TARGET LOST");
+
+      video.pause();
+
+      message.innerHTML =
+        "Point the camera at the elephant photo";
+
+    });
+
+  </script>
+
+</body>
+</html>
